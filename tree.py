@@ -15,10 +15,10 @@ def series_non_repeating_numbers(n, a0, a1, nested=False):
     return lst
 
 
-class Map:
+class Tree:
     def __init__(self, map_size):
         super().__init__()
-        self.map_size = 1 + map_size * 2
+        self.map_size = map_size
         self.field = [[None for _ in range(1 + map_size * 2)] for _ in range(1 + map_size * 2)]
 
     def sprawl_in(self, cage, x, y, index):
@@ -38,6 +38,13 @@ class Map:
             if elem is None:
                 continue
             elem.sprawl()
+
+    def set_seed(self, seed):
+        if seed.count >= self.map_size:
+            seed.count = self.map_size - 1
+
+        self.field = [[None for _ in range(1 + self.map_size * 2)] for _ in range(1 + self.map_size * 2)]
+        self.sprawl_in(seed, self.map_size, self.map_size, 0)
 
     def __str__(self):
         def func1(a0):
@@ -60,7 +67,7 @@ class Cage:
             chromosome.append([random.randint(0, 1)] + [line])
         return chromosome
 
-    def __init__(self, chromosome_size=None, x=None, y=None, count=None, map_=None, parent=None):
+    def __init__(self, chromosome_size=None, x=None, y=None, count=None, map_=None, parent=None, chromosome=None):
         super().__init__()
         self.x = x
         self.y = y
@@ -69,16 +76,18 @@ class Cage:
         self.chromosome_size = chromosome_size
         self.count = count
 
-        self.chromosome = None
+        self.chromosome = chromosome
         self.id = None
         self.is_sprawl = False
         self.index = None
+
 
         self.set_characteristics()
 
     def set_characteristics(self):
         if self.parent is None:
-            self.chromosome = self.generate_chromosome(self.chromosome_size)
+            if self.chromosome is None:
+                self.chromosome = self.generate_chromosome(self.chromosome_size)
             self.id = random.randint(0, 1048576)
             self.index = 0
         else:
@@ -176,8 +185,8 @@ class Cage:
 
 
 class Seed(Cage):
-    def __init__(self, count, map_, chromosome_size=4, x=None, y=None):
-        super().__init__(chromosome_size, x, y, count, map_, None)
+    def __init__(self, count, chromosome_size=4, map_=None, x=None, y=None, chromosome=None):
+        super().__init__(chromosome_size, x, y, count, map_, None, chromosome=chromosome)
 
 
 class Branch(Cage):
@@ -194,14 +203,14 @@ class Leaves(Branch):
 
 
 if __name__ == '__main__':
-    m = Map(10)
-    s = Seed(9, m, 100)
+    m = Tree(9)
+    s = Seed(8, 4, m)
     # s.chromosome = [[1, [[3, 1], [1, 0], [2, 0], [0, 0]]],
     #                 [1, [[1, 1], [0, 1], [2, 0], [3, 0]]],
     #                 [1, [[0, 0], [1, 0], [2, 1], [3, 1]]],
     #                 [1, [[3, 1], [2, 0], [1, 0], [0, 0]]]]
 
-    m.sprawl_in(s, 10, 10, 0)
-    for _ in range(9):
+    m.sprawl_in(s, 9, 9, 0)
+    for _ in range(8):
         m.next()
     print(m)
